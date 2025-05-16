@@ -23,7 +23,7 @@ public class PlayerPutBuildingPositionConfirm
     {
         if (this.RightBuildingData.ContainsKey(PlayerBuildingData.WorldPosition) == false)
         {
-            Debug.Log("Can not find");
+            //Debug.Log("Can not find");
             return false;
         }
         BuildingData TheRightBuildingData = RightBuildingData[PlayerBuildingData.WorldPosition];

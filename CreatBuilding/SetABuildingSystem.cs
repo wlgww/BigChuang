@@ -8,7 +8,7 @@ public class SetABuildingSystem : MonoBehaviour
     
     private bool IfFirstCreat;
     private GameObject TheGround;
-    private Vector3 PutGridPosition = Vector3.zero;
+    private Vector3 PutWorldPosition = Vector3.zero;
     private GameObject TheSetBuilding;//正在设置的建筑
     private BuildingData TheBuildingData;//正在设置的建筑的信息
     private Vector3 OriginalPosition;
@@ -103,7 +103,7 @@ public class SetABuildingSystem : MonoBehaviour
         if (LoadMode)
         {
             RotateTheBuilding((int)TheBuildingData.Rotate.y);
-            PutGridPosition=TheSetBuilding.transform.position;
+            PutWorldPosition=TheSetBuilding.transform.position;
             StopTheSystem(false,false);
             return;
         }
@@ -112,8 +112,8 @@ public class SetABuildingSystem : MonoBehaviour
 
         if (IsTheFirstToCreat)
         {
-            MousePositionToGridPosition(IfPutInMiddle);
-            TheSetBuilding.transform.position = PutGridPosition + new Vector3(0, PreviewPrefabUpset, 0);
+            JustWorldPosition(IfPutInMiddle);
+            TheSetBuilding.transform.position = PutWorldPosition + new Vector3(0, PreviewPrefabUpset, 0);
             OriginalPosition = TheSetBuilding.transform.position;
         }
         else
@@ -188,14 +188,16 @@ public class SetABuildingSystem : MonoBehaviour
             EFinishToSet?.Invoke(new OverCreatEventArgs(false, TheBuildingData));
             return;
         }
-        gridPlacedGameObjectData.RemoveObjectAt(grid.WorldToCell(OriginalPosition));
+
+        gridPlacedGameObjectData.RemoveObjectAt(grid.WorldToCell(OriginalPosition));//先从格子系统中移除
+
         if (IfBackToOriginalPosition)
         {
             BackToOriginalPosition();
         }
         else
         {
-            if (ToPutGameObjectOnGrid(PutGridPosition))
+            if (ToPutGameObjectOnGrid(PutWorldPosition))
             {
                 if (TheSetBuilding==null )
                 {
@@ -239,7 +241,7 @@ public class SetABuildingSystem : MonoBehaviour
     private bool ToPutGameObjectOnGrid(Vector3 PutPosition)
     {
 
-        if (gridPlacedGameObjectData.CanPlacedObjectAt(grid.WorldToCell(PutPosition), TheBuildingData.Size) == false)
+        if (gridPlacedGameObjectData.CanPlacedObjectAt(TheSetBuilding) == false)
         {
             return false;
         }
@@ -283,7 +285,7 @@ public class SetABuildingSystem : MonoBehaviour
         child.Translate(0, 0, childSize.x * grid.cellSize.x, Space.World);
         TheBuildingData.Size = new Vector2Int(TheBuildingData.Size.y, TheBuildingData.Size.x);
         TheBuildingData.Rotate=child.rotation.eulerAngles;
-        ChangePreviewObjectColor(PutGridPosition);
+        ChangePreviewObjectColor(PutWorldPosition);
     }
     public static event Action EPlacingTheBuilidng;
     public static event Action EFinishPlacing;
@@ -315,17 +317,17 @@ public class SetABuildingSystem : MonoBehaviour
     }
     private void MoveTheBuilding(bool IfWantToMove=true)
     {
-        MousePositionToGridPosition(!IfWantToMove);
+        JustWorldPosition(!IfWantToMove);
         CameraRotate.SetCameraRotate(false);
-        TheSetBuilding.transform.position = PutGridPosition + new Vector3(0, PreviewPrefabUpset, 0);
-        ChangePreviewObjectColor(PutGridPosition);
+        TheSetBuilding.transform.position = PutWorldPosition + new Vector3(0, PreviewPrefabUpset, 0);
+        ChangePreviewObjectColor(PutWorldPosition);
     }
     private void ChangePreviewObjectColor(Vector3 Position)
     {
         TheBuildingData.WorldPosition= Position;
         Color color = new Color();
         
-        if (gridPlacedGameObjectData.CanPlacedObjectAt(grid.WorldToCell(Position), TheBuildingData.Size) == false)
+        if (gridPlacedGameObjectData.CanPlacedObjectAt(TheSetBuilding) == false)
         {
             ECanNotPlaceThere.Invoke(TheBuildingData.Size);
             color = Color.red;
@@ -343,11 +345,12 @@ public class SetABuildingSystem : MonoBehaviour
         color.a = 0.5f;
         PreviewMaterialInstance.color = color;
     }
-    private void MousePositionToGridPosition(bool IfPutInMiddle = false)
+    private void JustWorldPosition(bool IfPutInMiddle = false)
     {
         Vector3 MousePosition = inputManager.GetSelectedMapPosition(IfPutInMiddle);
         Vector3Int GridPosition = grid.WorldToCell(MousePosition);
-        PutGridPosition = grid.CellToWorld(GridPosition);
+        PutWorldPosition = grid.CellToWorld(GridPosition);
+        PutWorldPosition = MousePosition;
     }
     
     //private void StartToPreview()

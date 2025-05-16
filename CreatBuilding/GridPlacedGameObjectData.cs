@@ -33,18 +33,35 @@ public class GridPlacedGameObjectData
         }
         return returnVal;
     }
-    public bool CanPlacedObjectAt(Vector3Int gridPosition, Vector2Int objectSize)
+    public bool CanPlacedObjectAt(GameObject TheBuilding)
     {
-        List<Vector3Int> positionToOccupy = CalculatePositions(gridPosition, objectSize);
-        foreach (var position in positionToOccupy)
+        BuildingIsCollide  buildingIsCollide=TheBuilding.GetComponentInChildren<BuildingIsCollide>();
+        if (buildingIsCollide == null)
         {
-            if (AllPlacedGridData.ContainsKey(position))
-            {
-                return false;
-            }
+            Debug.Log("TheBuilding.GetComponent<BuildingIsCollide>()==null");
+            return false;
         }
-        return true;
+        if (buildingIsCollide.isCollide == true)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
+    //public bool CanPlacedObjectAt(Vector3Int gridPosition, Vector2Int objectSize)
+    //{
+    //    List<Vector3Int> positionToOccupy = CalculatePositions(gridPosition, objectSize);
+    //    foreach (var position in positionToOccupy)
+    //    {
+    //        if (AllPlacedGridData.ContainsKey(position))
+    //        {
+    //            return false;
+    //        }
+    //    }
+    //    return true;
+    //}
     public void RemoveObjectAt(Vector3Int gridPosition)
     {
         if (AllPlacedGridData.ContainsKey(gridPosition)==false)
